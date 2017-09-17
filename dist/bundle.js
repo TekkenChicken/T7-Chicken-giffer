@@ -25794,9 +25794,12 @@ exports.default = (0, _redux.combineReducers)({
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var initialState = {
     auth: "",
-    links: [],
+    links: {},
     isLoading: false
 };
 
@@ -25810,24 +25813,18 @@ var gfycat = exports.gfycat = function gfycat() {
         //return { ...state, auth: action.token }
 
         case 'CONTAIN_LINK':
-            //return { ...state, links: [...action.link]}
-            return Object.assign({}, state, { links: state.links.concat(action.link) });
+            console.log('contain link update', action.link);
+            var link = action.link;
+
+            return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, link.linkId, link)) });
 
         case 'UPDATE_LINK_SUCCESS':
-            state.links.map(function (l, k) {
-                if (l.linkId == action.id) {
-                    return Object.assign({}, state, { links: state.links[k].status = 'complete!' });
-                }
-            });
-            return state;
+            console.log('update link success', action.id);
+            var id = action.id;
 
-        case 'UPDATE_LINK_ERROR':
-            state.links.map(function (l, k) {
-                if (l.linkId == action.id) {
-                    return Object.assign({}, state, { links: state.links[k].status = 'error!' });
-                }
-            });
-            return state;
+            var linksObj = state.links;
+            console.log('what the hell is this?', state.links[id]);
+            return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, id, Object.assign({}, state.links[id], { status: 'Complete!' }))) });
 
         default:
             return state;
@@ -26474,7 +26471,7 @@ var App = function (_Component) {
     }, {
         key: 'componentDidUpdate',
         value: function componentDidUpdate() {
-            !this.props.links[0] ? console.log('nothing to check') : this.props.checkStatuses(this.props.links);
+            !this.props.links ? console.log('nothing to check') : this.props.checkStatuses(this.props.links);
         }
     }, {
         key: 'componentWillReceiveProps',
@@ -26511,14 +26508,14 @@ var App = function (_Component) {
         value: function render() {
             var _this2 = this;
 
-            console.log('render');
+            console.log('render', this.props);
             return _react2.default.createElement(
                 'div',
                 { className: 'main-container' },
                 _react2.default.createElement(_GifCuttingForm2.default, { handleGifCutter: function handleGifCutter(e) {
                         return _this2.handleGifCutter(e);
                     } }),
-                _react2.default.createElement(_StatusPanel2.default, { links: this.props.links })
+                !this.props.links ? console.log('nothing to show status for') : _react2.default.createElement(_StatusPanel2.default, { links: this.props.links })
             );
         }
     }]);
@@ -26641,16 +26638,20 @@ var getFetchStatus = function getFetchStatus(url, params, id) {
 
 var checkStatuses = exports.checkStatuses = function checkStatuses(links) {
     return function (dispatch) {
-        var linkPromises = [];
+        var incompleteGifs = [];
 
-        links.forEach(function (l) {
-            dispatch(getFetchStatus('/checkStatuses/' + l.linkId, { method: 'GET', headers: { 'Content-Type': 'application/json' } }, l.linkId));
+        Object.keys(links).forEach(function (l) {
+            if (links[l].status == 'loading') {
+                incompleteGifs.push(links[l]);
+            } else {
+                null;
+            }
         });
 
-        // links.forEach(l => linkPromises.push(
-        //     getFetchStatus(`/checkStatuses/${l.linkId}`, {method: 'GET', headers: { 'Content-Type': 'application/json' } })
-        // ))
-        //Promise.all(linkPromises).then(statuses => { console.log('Promise.all', statuses) })
+        console.log('incomplete gifs', incompleteGifs);
+        incompleteGifs.forEach(function (l) {
+            dispatch(getFetchStatus('/checkStatuses/' + l.linkId, { method: 'GET', headers: { 'Content-Type': 'application/json' } }, l.linkId));
+        });
     };
 };
 
@@ -32757,6 +32758,7 @@ var GifLink = function GifLink(_ref) {
     return _react2.default.createElement(
         'div',
         null,
+        console.log('link name and status', linkName, status),
         _react2.default.createElement(
             'a',
             { href: linkName },
@@ -32782,8 +32784,9 @@ var StatusPanel = function (_Component) {
     _createClass(StatusPanel, [{
         key: 'renderLinks',
         value: function renderLinks(links) {
-            return links.map(function (l, key) {
-                return _react2.default.createElement(GifLink, { key: l.linkName, linkName: l.linkName, status: l.status });
+            console.log('status panel links', links);
+            return Object.keys(links).map(function (l, key) {
+                return _react2.default.createElement(GifLink, { key: links[l].linkName, linkName: links[l].linkName, status: links[l].status });
             });
         }
     }, {

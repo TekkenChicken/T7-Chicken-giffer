@@ -42,7 +42,6 @@ export const cutGif = (url, title, startMinutes, startSeconds, length, auth) => 
 
 
 const getFetchStatus = (url, params, id) => dispatch => {
-    console.log('id', id)
     return new Promise((resolve, reject) => {
         fetch(url, params, id)
         .then(response => response.json())
@@ -57,7 +56,7 @@ const getFetchStatus = (url, params, id) => dispatch => {
                     id
                 })
             } else {
-                console.log('something went wrong')
+                console.log('something went wrong...idk what, don\'t ask')
                 return dispatch({
                     type: 'UPDATE_LINK_ERROR',
                     id
@@ -69,18 +68,21 @@ const getFetchStatus = (url, params, id) => dispatch => {
 }
 
 export const checkStatuses = links => dispatch => {
-    const linkPromises = []
+    const incompleteGifs = []
 
-    links.forEach(l => {
+    Object.keys(links).forEach(l => {
+        if (links[l].status == 'loading') {
+            incompleteGifs.push(links[l])
+        } else {
+            null
+        }
+    })
+
+    incompleteGifs.forEach(l => {
         dispatch(
             getFetchStatus(`/checkStatuses/${l.linkId}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } }, l.linkId)
         )
     })
-
-    // links.forEach(l => linkPromises.push(
-    //     getFetchStatus(`/checkStatuses/${l.linkId}`, {method: 'GET', headers: { 'Content-Type': 'application/json' } })
-    // ))
-    //Promise.all(linkPromises).then(statuses => { console.log('Promise.all', statuses) })
 }
 
 //update state with acquired token

@@ -18,11 +18,7 @@ class App extends Component {
     }
 
     componentDidUpdate() {
-        !this.props.links[0] ? console.log('nothing to check') : this.props.checkStatuses(this.props.links)
-    }
-
-    componentWillReceiveProps() {
-        console.log('will receive props')
+        !this.props.links ? console.log('nothing to check') : this.props.checkStatuses(this.props.links)
     }
 
     handleGifCutter(e) {
@@ -56,11 +52,12 @@ class App extends Component {
         }
 
     render() {
-        console.log('render')
         return (
             <div className="main-container">
                 <GifCuttingForm handleGifCutter={(e) => this.handleGifCutter(e)} />
-                <StatusPanel links={this.props.links}/>
+                    {
+                    !this.props.links ? console.log('nothing to show status for') : <StatusPanel links={this.props.links} />
+                    }
             </div>
         )
     }

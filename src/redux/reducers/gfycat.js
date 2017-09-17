@@ -1,6 +1,6 @@
 const initialState = {
     auth: "",
-    links: [],
+    links: {},
     isLoading: false,
 }
 
@@ -11,24 +11,17 @@ export const gfycat = (state = initialState, action) => {
         //return { ...state, auth: action.token }
 
         case 'CONTAIN_LINK':
-            //return { ...state, links: [...action.link]}
-            return Object.assign({}, state, { links: state.links.concat(action.link) })
+            console.log('contain link update', action.link)
+            const { link } = action
+            return Object.assign({}, state, { links: Object.assign({}, state.links, { [link.linkId]: link}) })
 
         case 'UPDATE_LINK_SUCCESS':
-                state.links.map((l, k) => {
-                    if (l.linkId == action.id) {
-                       return Object.assign({}, state, { links: state.links[k].status = 'complete!' })
-                    }
-                })
-                return state;
-
-        case 'UPDATE_LINK_ERROR':
-            state.links.map((l, k) => {
-                if (l.linkId == action.id) {
-                    return Object.assign({}, state, { links: state.links[k].status = 'error!' })
-                }
-            })
-            return state;
+            console.log('update link success', action.id)
+            const { id } = action
+            const linksObj = state.links
+            console.log('what the hell is this?', state.links[id])
+            return Object.assign({}, state, { links: Object.assign({}, state.links, { [id]: Object.assign({}, state.links[id], {status: 'Complete!'})} ) })
+              
 
         default: return state
     }
