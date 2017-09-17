@@ -1,0 +1,105 @@
+//fetch authenticatoin token from node server
+export const getAuth = () => dispatch => {
+    fetch('/getAuth', {
+        method: 'GET',
+    })
+    .then((response) => {
+        return response.ok ? response.json() : console.log('fail')
+    })
+    .then((data) => {
+        //pass token to getAuthToken dispatch to update the auth state
+        dispatch(getAuthToken(data.access_token))
+    })
+}
+
+//cut gif from youtube video
+export const cutGif = (url, title, startMinutes, startSeconds, length, auth) => dispatch => {
+    fetch('/cut', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth}`
+        },
+        body: JSON.stringify({
+            fetchUrl: url,
+            title,
+            fetchMinutes: startMinutes,
+            fetchSeconds: startSeconds,
+            fetchLength: length,
+            auth
+        })
+    })
+    .then((response) => {
+        return response.json()
+    })
+    .then((data => {
+        //get the gif name and send it to containLink action
+        dispatch(containLink(data.gfyname))
+    }))
+}
+
+//get statuses
+
+
+const getFetchStatus = (url, params, id) => dispatch => {
+    console.log('id', id)
+    return new Promise((resolve, reject) => {
+        fetch(url, params, id)
+        .then(response => response.json())
+        .then(data => { 
+            if(data.task == 'encoding') {
+                console.log('still encoding') 
+                setTimeout(() => dispatch(getFetchStatus(url, params, id), 3000))
+            } else if(data.task == 'complete') {
+                console.log('finished making the gif!')
+                return dispatch({
+                    type: 'UPDATE_LINK_SUCCESS',
+                    id
+                })
+            } else {
+                console.log('something went wrong')
+                return dispatch({
+                    type: 'UPDATE_LINK_ERROR',
+                    id
+                })
+            }
+        })
+        .catch(err => reject(err))
+    });
+}
+
+export const checkStatuses = links => dispatch => {
+    const linkPromises = []
+
+    links.forEach(l => {
+        dispatch(
+            getFetchStatus(`/checkStatuses/${l.linkId}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } }, l.linkId)
+        )
+    })
+
+    // links.forEach(l => linkPromises.push(
+    //     getFetchStatus(`/checkStatuses/${l.linkId}`, {method: 'GET', headers: { 'Content-Type': 'application/json' } })
+    // ))
+    //Promise.all(linkPromises).then(statuses => { console.log('Promise.all', statuses) })
+}
+
+//update state with acquired token
+export const getAuthToken = (token) => dispatch => {
+    return dispatch ({
+        type: 'GET_AUTH',
+        token
+    })
+}
+
+//add link to an array to be rendered as a list
+export const containLink = linkName => dispatch => {
+    return dispatch({
+        type: 'CONTAIN_LINK',
+        link: {
+            linkId: linkName,
+            linkName: `https://gfycat.com/${linkName}`,
+            status: 'loading'
+        }
+    })
+}
+
