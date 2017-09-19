@@ -35,8 +35,7 @@ router.post('/cut', (req, res, next) => {
 })
 
 router.get('/checkStatuses/:linkId', (req, res, next) => {
-    console.log('home many times does this run?')
-
+    console.log('checking link id', req.params.linkId)
     const options = {
         method: 'GET',
         url: `https://api.gfycat.com/v1/gfycats/fetch/status/${req.params.linkId}`,

@@ -46,13 +46,18 @@ const getFetchStatus = (url, params, id) => dispatch => {
         fetch(url, params, id)
         .then(response => response.json())
         .then(data => { 
-            if(data.task == 'encoding') {
+            if(data.task == 'encoding') {   
                 console.log('still encoding') 
                 setTimeout(() => dispatch(getFetchStatus(url, params, id), 3000))
             } else if(data.task == 'complete') {
                 console.log('finished making the gif!')
                 return dispatch({
                     type: 'UPDATE_LINK_SUCCESS',
+                    id
+                })
+            } else if(data.task == 'NotFoundo') {
+                return dispatch({
+                    type: 'UPDATE_LINK_NOT_FOUND',
                     id
                 })
             } else {

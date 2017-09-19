@@ -25819,12 +25819,15 @@ var gfycat = exports.gfycat = function gfycat() {
             return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, link.linkId, link)) });
 
         case 'UPDATE_LINK_SUCCESS':
-            console.log('update link success', action.id);
             var id = action.id;
 
-            var linksObj = state.links;
-            console.log('what the hell is this?', state.links[id]);
             return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, id, Object.assign({}, state.links[id], { status: 'Complete!' }))) });
+
+        case 'UPDATE_LINK_NOT_FOUND':
+            return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, id, Object.assign({}, state.links[id], { status: 'Gif Not Found. Wtf?!' }))) });
+
+        case 'UPDATE_LINK_ERROR':
+            return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, id, Object.assign({}, state.links[id], { status: 'Error :(' }))) });
 
         default:
             return state;
@@ -26474,11 +26477,6 @@ var App = function (_Component) {
             !this.props.links ? console.log('nothing to check') : this.props.checkStatuses(this.props.links);
         }
     }, {
-        key: 'componentWillReceiveProps',
-        value: function componentWillReceiveProps() {
-            console.log('will receive props');
-        }
-    }, {
         key: 'handleGifCutter',
         value: function handleGifCutter(e) {
             e.preventDefault();
@@ -26508,7 +26506,6 @@ var App = function (_Component) {
         value: function render() {
             var _this2 = this;
 
-            console.log('render', this.props);
             return _react2.default.createElement(
                 'div',
                 { className: 'main-container' },
@@ -26606,7 +26603,6 @@ var cutGif = exports.cutGif = function cutGif(url, title, startMinutes, startSec
 
 var getFetchStatus = function getFetchStatus(url, params, id) {
     return function (dispatch) {
-        console.log('id', id);
         return new Promise(function (resolve, reject) {
             fetch(url, params, id).then(function (response) {
                 return response.json();
@@ -26622,8 +26618,13 @@ var getFetchStatus = function getFetchStatus(url, params, id) {
                         type: 'UPDATE_LINK_SUCCESS',
                         id: id
                     });
+                } else if (data.task == 'NotFoundo') {
+                    return dispatch({
+                        type: 'UPDATE_LINK_NOT_FOUND',
+                        id: id
+                    });
                 } else {
-                    console.log('something went wrong');
+                    console.log('something went wrong...idk what, don\'t ask');
                     return dispatch({
                         type: 'UPDATE_LINK_ERROR',
                         id: id
@@ -26648,7 +26649,6 @@ var checkStatuses = exports.checkStatuses = function checkStatuses(links) {
             }
         });
 
-        console.log('incomplete gifs', incompleteGifs);
         incompleteGifs.forEach(function (l) {
             dispatch(getFetchStatus('/checkStatuses/' + l.linkId, { method: 'GET', headers: { 'Content-Type': 'application/json' } }, l.linkId));
         });
