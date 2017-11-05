@@ -34,12 +34,11 @@ export const cutGif = (url, title, startMinutes, startSeconds, length, auth) => 
     })
     .then((data => {
         //get the gif name and send it to containLink action
-        dispatch(containLink(data.gfyname))
+        dispatch(containLink(data.gfyname, title, startMinutes+':'+startSeconds))
     }))
 }
 
 //get statuses
-
 
 const getFetchStatus = (url, params, id) => dispatch => {
     return new Promise((resolve, reject) => {
@@ -72,6 +71,32 @@ const getFetchStatus = (url, params, id) => dispatch => {
     });
 }
 
+const deleteGifHandler = (url, params, id) => dispatch => {
+    console.log('delete gif handler', url, id)
+    return (
+        fetch(url, params, id)
+        .then(response => response.json())
+        .then(data => {
+            console.log('data from deletion', data)
+            return data
+        })
+        .catch(err => console.log(err))
+    )
+}
+
+export const deleteGif = (linkId, auth) => dispatch => {
+    console.log('auth log', auth)
+    dispatch(
+        deleteGifHandler(`/delete/${linkId}`, 
+          {
+            method: 'DELETE', 
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${auth}` },
+            body: JSON.stringify({ 'Authorization': `Bearer ${auth}`})
+          },
+          linkId)
+        )
+    }
+
 export const checkStatuses = links => dispatch => {
     const incompleteGifs = []
 
@@ -99,13 +124,15 @@ export const getAuthToken = (token) => dispatch => {
 }
 
 //add link to an array to be rendered as a list
-export const containLink = linkName => dispatch => {
+export const containLink = (linkName, title, startTime) => dispatch => {
     return dispatch({
         type: 'CONTAIN_LINK',
         link: {
+            title,
             linkId: linkName,
             linkName: `https://gfycat.com/${linkName}`,
-            status: 'loading'
+            status: 'loading',
+            startTime
         }
     })
 }
