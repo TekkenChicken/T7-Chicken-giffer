@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { getAuth, cutGif, checkStatuses } from '../redux/actions/gfycat';
+import { getAuth, cutGif, checkStatuses, deleteGif } from '../redux/actions/gfycat';
 
 import GifCuttingForm from './GifCuttingForm';
+import GifDeletingForm from './GifDeletingForm';
 import StatusPanel from './StatusPanel';
 
 
@@ -51,6 +52,13 @@ class App extends Component {
             auth)
         }
 
+        handleDelete(e, auth) {
+            e.preventDefault()
+            const { gfycatid } = e.target;
+
+            this.props.deleteGif(gfycatid.value, auth)
+        }
+
     render() {
         return (
             <div className="main-container">
@@ -58,6 +66,7 @@ class App extends Component {
                     {
                     !this.props.links ? console.log('nothing to show status for') : <StatusPanel links={this.props.links} />
                     }
+                <GifDeletingForm handleDelete={(e) => this.handleDelete(e, this.props.auth)}/>
             </div>
         )
     }
@@ -82,7 +91,8 @@ const mapDispatchToProps = (dispatch) => {
             startSeconds,
             length,
             auth) => dispatch(cutGif(url, title, startMinutes, startSeconds, length, auth)),
-            checkStatuses: (links) => dispatch(checkStatuses(links))
+            checkStatuses: (links) => dispatch(checkStatuses(links)),
+            deleteGif: (id, auth) => dispatch(deleteGif(id, auth))
     }
 }
 export default connect(mapStateToProps, mapDispatchToProps)(App);
