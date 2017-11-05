@@ -55,6 +55,27 @@ router.get('/checkStatuses/:linkId', (req, res, next) => {
     })
 })
 
+router.delete('/delete/:linkId', (req, res, next) => {
+    console.log('deleting gif', req.body)
+    const options = {
+        method: 'DELETE',
+        url: `https://api.gfycat.com/v1/me/gfycats/${req.params.linkId}`,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.body.Authorization
+        },
+        json: true
+    }
+    return rp(options)
+    .then(data => { console.log(res.json(data))
+        return res.json(data)
+    })
+    .catch(err => {
+        console.log('deletion error :L', res.json(err))
+        res.json(err)
+    })
+})
+
 app.use('/', router)
 
 module.exports = router;
