@@ -17,7 +17,7 @@ export const gfycat = (state = initialState, action) => {
 
         case 'UPDATE_LINK_SUCCESS':
             const { id } = action
-            return Object.assign({}, state, { links: Object.assign({}, state.links, { [id]: Object.assign({}, state.links[id], {status: 'Complete!'})} ) })
+            return Object.assign({}, state, { links: Object.assign({}, state.links, { [id]: Object.assign({}, state.links[id], {status: 'Complete!' }) }) })
 
         case 'UPDATE_LINK_NOT_FOUND':
             return Object.assign({}, state, { links: Object.assign({}, state.links, { [id]: Object.assign({}, state.links[id], { status: 'Gif Not Found. Wtf?!' }) }) })
