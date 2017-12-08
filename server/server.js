@@ -1,4 +1,3 @@
-const listEndpoints = require('express-list-endpoints');
 const express = require('express');
 const path = require('path');
 const rp = require('request-promise');
