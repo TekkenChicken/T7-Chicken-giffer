@@ -1,7 +1,7 @@
 {
-  "name": "challenge",
+  "name": "t7cgiffer",
   "version": "1.0.0",
-  "description": "Code Challenge",
+  "description": "Tool for making gifs",
   "main": "index.js",
   "scripts": {
     "start": "webpack & node server/server.js",
