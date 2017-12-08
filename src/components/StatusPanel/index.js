@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 const GifLink = ({linkName, status}) => (
     <div>
         {console.log('link name and status', linkName, status)}
-        <a href={linkName}>{linkName}</a>
+        <a target="_blank" href={linkName}>{linkName}</a>
         <div>{status}</div>
     </div>
 )
