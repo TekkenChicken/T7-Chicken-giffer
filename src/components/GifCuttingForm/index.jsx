@@ -30,7 +30,7 @@ class GifCuttingForm extends Component {
         }
         return (
             <div className="gif-cutting-form-container">
-                <h2>Paste YouTube link below</h2>
+                <h2>Paste YouTube link here</h2>
                 <YouTube
                     opts={opts}
                     videoId={this.state.url}
@@ -60,7 +60,5 @@ class GifCuttingForm extends Component {
         )
     }
 }
-
-
 
 export default GifCuttingForm;
