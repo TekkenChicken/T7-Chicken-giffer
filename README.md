@@ -20,6 +20,6 @@ Contact Nick for the config file
 npm start
 ```
 
-Should run on localhost:8000
+The project will run on port 8080 locally.
 
 

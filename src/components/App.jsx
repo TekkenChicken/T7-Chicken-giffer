@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { getAuth, cutGif, checkStatuses } from '../redux/actions/gfycat';
 
-import GifCuttingForm from './GifCuttingForm';
-import StatusPanel from './StatusPanel';
+import GifCuttingForm from './GifCuttingForm/index';
+import StatusPanel from './StatusPanel/index';
 
 
 class App extends Component {
@@ -24,7 +24,7 @@ class App extends Component {
     handleGifCutter(e) {
         e.preventDefault()
         const auth = this.props.auth;
-        const { 
+        const {
             url,
             title,
             startMinutes,
