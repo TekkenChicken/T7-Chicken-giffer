@@ -17,7 +17,7 @@ class StatusPanel extends Component {
         })
     }
 
-
+        
     render() {
         console.log('status panel props', this.props)
         return (

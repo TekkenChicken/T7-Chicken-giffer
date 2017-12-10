@@ -5,21 +5,14 @@ import Store from './redux/store';
 
 import './styles/index.scss';
 
-import App from './components/App.jsx';
+import App from './components/App.js';
+
 
 const store = Store;
 const rootElement = document.getElementById('root');
 
-const Root = () => {
-    return (
-        <Provider store={store}>
-            <App/>
-        </Provider>
-    );
-}
-
-render(<Root/>, rootElement);
-
-if (module.hot) {
-  module.hot.accept();
-}
+render(
+    <Provider store={store}>
+        <App />
+    </Provider>, rootElement 
+)
