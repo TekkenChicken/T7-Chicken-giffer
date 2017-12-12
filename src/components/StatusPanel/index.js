@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 
 const GifLink = ({linkName, status, title, startTime}) => (
     <div>
-        <div>{title}</div>
-        <div>{startTime}</div>
-        <a href={linkName}>{linkName}</a>
+        {console.log('link name and status', linkName, status)}
+        <a target="_blank" href={linkName}>{linkName}</a>
         <div>{status}</div>
     </div>
 )

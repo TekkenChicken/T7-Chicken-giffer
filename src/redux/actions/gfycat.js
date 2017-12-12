@@ -75,17 +75,16 @@ const deleteGifHandler = (url, params, id) => dispatch => {
     console.log('delete gif handler', url, id)
     return (
         fetch(url, params, id)
-        .then(response => response.json())
+        .then(response => response.ok ? response.json() : console.log('err', response))
         .then(data => {
             console.log('data from deletion', data)
             return data
         })
-        .catch(err => console.log(err))
+        .catch(err => console.log('something went wrong', err))
     )
 }
 
 export const deleteGif = (linkId, auth) => dispatch => {
-    console.log('auth log', auth)
     dispatch(
         deleteGifHandler(`/delete/${linkId}`, 
           {
