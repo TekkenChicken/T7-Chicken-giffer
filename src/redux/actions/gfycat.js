@@ -59,8 +59,8 @@ const getFetchStatus = (url, params, id) => dispatch => {
                     type: 'UPDATE_LINK_NOT_FOUND',
                     id
                 })
-            } else {
-                console.log('something went wrong...idk what, don\'t ask')
+            } else if(data.task == 'error') {
+                console.log('an error has occured');
                 return dispatch({
                     type: 'UPDATE_LINK_ERROR',
                     id
@@ -75,10 +75,16 @@ const deleteGifHandler = (url, params, id) => dispatch => {
     console.log('delete gif handler', url, id)
     return (
         fetch(url, params, id)
-        .then(response => response.ok ? response.json() : console.log('err', response))
+        .then(response => {
+            console.log('what is response', response);
+            return response.ok ? response.json() : null
+        })
         .then(data => {
             console.log('data from deletion', data)
-            return data
+            return dispatch({
+                type: 'UPDATE_LINK_DELETED',
+                id
+            })
         })
         .catch(err => console.log('something went wrong', err))
     )

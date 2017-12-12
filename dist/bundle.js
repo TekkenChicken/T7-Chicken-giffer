@@ -26177,23 +26177,21 @@ var gfycat = exports.gfycat = function gfycat() {
         case 'GET_AUTH':
             return Object.assign({}, state, { auth: action.token });
         //return { ...state, auth: action.token }
-
         case 'CONTAIN_LINK':
             console.log('contain link update', action.link);
             var link = action.link;
 
             return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, link.linkId, link)) });
-
         case 'UPDATE_LINK_SUCCESS':
             var id = action.id;
 
             return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, id, Object.assign({}, state.links[id], { status: 'Complete!' }))) });
-
         case 'UPDATE_LINK_NOT_FOUND':
             return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, id, Object.assign({}, state.links[id], { status: 'Gif Not Found. Wtf?!' }))) });
-
         case 'UPDATE_LINK_ERROR':
             return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, id, Object.assign({}, state.links[id], { status: 'Error :(' }))) });
+        case 'UPDATE_LINK_DELETED':
+            return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, id, Object.assign({}, state.links[id], { status: 'Deleted!' }))) });
 
         default:
             return state;
@@ -27007,8 +27005,8 @@ var getFetchStatus = function getFetchStatus(url, params, id) {
                         type: 'UPDATE_LINK_NOT_FOUND',
                         id: id
                     });
-                } else {
-                    console.log('something went wrong...idk what, don\'t ask');
+                } else if (data.task == 'error') {
+                    console.log('an error has occured');
                     return dispatch({
                         type: 'UPDATE_LINK_ERROR',
                         id: id
@@ -27025,10 +27023,14 @@ var deleteGifHandler = function deleteGifHandler(url, params, id) {
     return function (dispatch) {
         console.log('delete gif handler', url, id);
         return fetch(url, params, id).then(function (response) {
-            return response.ok ? response.json() : console.log('err', response);
+            console.log('what is response', response);
+            return response.ok ? response.json() : null;
         }).then(function (data) {
             console.log('data from deletion', data);
-            return data;
+            return dispatch({
+                type: 'UPDATE_LINK_DELETED',
+                id: id
+            });
         }).catch(function (err) {
             return console.log('something went wrong', err);
         });
@@ -32875,18 +32877,15 @@ var GifLink = function GifLink(_ref) {
         'div',
         null,
         _react2.default.createElement(
-            'div',
+            'h2',
             null,
+            'Attack Notation ',
             title
         ),
-        _react2.default.createElement(
-            'div',
-            null,
-            startTime
-        ),
+        console.log('link name and status', linkName, status),
         _react2.default.createElement(
             'a',
-            { href: linkName },
+            { target: '_blank', href: linkName },
             linkName
         ),
         _react2.default.createElement(

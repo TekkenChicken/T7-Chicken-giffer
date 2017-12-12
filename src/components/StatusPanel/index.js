@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 const GifLink = ({linkName, status, title, startTime}) => (
     <div>
+        <h4>Attack Notation: {title}</h4>
         {console.log('link name and status', linkName, status)}
         <a target="_blank" href={linkName}>{linkName}</a>
         <div>{status}</div>

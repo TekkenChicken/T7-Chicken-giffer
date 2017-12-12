@@ -56,7 +56,7 @@ router.get('/checkStatuses/:linkId', (req, res, next) => {
 })
 
 router.delete('/delete/:linkId', (req, res, next) => {
-    console.log('deleting gif', req.body)
+    console.log('deleting gif', req.params.linkId)
     const options = {
         method: 'DELETE',
         url: `https://api.gfycat.com/v1/me/gfycats/${req.params.linkId}`,
@@ -67,7 +67,7 @@ router.delete('/delete/:linkId', (req, res, next) => {
         json: true
     }
     return rp(options)
-    .then(data => { console.log(res.json(data))
+    .then(data => { console.log('wtf man', res.json(data.statusMessage))
         return res.json(data)
     })
     .catch(err => {
