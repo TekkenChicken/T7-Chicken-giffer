@@ -13,7 +13,7 @@ class GifCuttingForm extends Component {
         super();
         this.state = {
             url: "",
-            sliderMax: 0
+            videoDuration: 0
         }
     }
 
@@ -31,18 +31,23 @@ class GifCuttingForm extends Component {
             event.target.playVideo()
         } else {
             this.setState({
-                sliderMax: event.target.getDuration()
+                videoDuration: event.target.getDuration()
             })
         }
     }
 
     renderSlider(duration) {
-        console.log('duration', duration);
-        return <p>Test wtf</p>
+        duration = Math.round(duration)
+        return (
+            <Range
+              allowCross={false}
+              max={duration}
+            />
+        )
     }
 
     render() {
-        this.state.sliderMax === 0 ? console.log('0 is true') : ('not 0')
+        this.state.videoDuration === 0 ? console.log('0 is true') : ('not 0')
         const opts = {
             width: '500',
         }
@@ -61,7 +66,7 @@ class GifCuttingForm extends Component {
                     <label>
                         Notation: <input type="text" name="title" />
                     </label>
-                        {this.state.sliderMax === 0 ? <p>WTF</p> : <Range />}
+                        {this.state.videoDuration === 0 ? null : this.renderSlider(this.state.videoDuration)}
                     <label>
                         Start Time:
           <input className="minute-input" type="number" name="startMinutes" maxLength="2" />
