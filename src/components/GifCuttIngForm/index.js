@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import YouTube from 'react-youtube';
+import Slider, { Range } from 'rc-slider';
 
 const youtubeParse = (url) => {
     const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
@@ -11,7 +12,8 @@ class GifCuttingForm extends Component {
     constructor() {
         super();
         this.state = {
-            url: ""
+            url: "",
+            sliderMax: 0
         }
     }
 
@@ -24,6 +26,14 @@ class GifCuttingForm extends Component {
         })
     }
 
+    onReady(event, url) {
+        if(event.target.getDuration() === 0) {
+            event.target.playVideo()
+        } else {
+            console.log('duration', event.target.getDuration())
+        }
+    }
+
     render() {
         const opts = {
             width: '500',
@@ -34,6 +44,7 @@ class GifCuttingForm extends Component {
                 <YouTube
                     opts={opts}
                     videoId={this.state.url}
+                    onStateChange={(event) => this.onReady(event, this.state.url)}
                 />
                 <form onSubmit={this.props.handleGifCutter} noValidate>
                     <label>
@@ -41,6 +52,9 @@ class GifCuttingForm extends Component {
                     </label>
                     <label>
                         Notation: <input type="text" name="title" />
+                    </label>
+                    <label>
+                        <Range />
                     </label>
                     <label>
                         Start Time:
