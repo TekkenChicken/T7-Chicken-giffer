@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import YouTube from 'react-youtube';
-import Slider, { Range } from 'rc-slider';
+import Slider from 'rc-slider';
+const createSliderWithTooltip = Slider.createSliderWithTooltip;
+const Range = createSliderWithTooltip(Slider.Range);
 
 const youtubeParse = (url) => {
     const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
@@ -36,12 +38,24 @@ class GifCuttingForm extends Component {
         }
     }
 
+    secondsToMinutes(seconds) {
+        let minutes = Math.floor(seconds/60);
+        let remaining = Math.floor(seconds % 60);
+        remaining < 10 ? remaining = '0' + remaining : remaining;
+        return `${minutes}:${remaining}`
+    }
+
     renderSlider(duration) {
         duration = Math.round(duration)
         return (
             <Range
               allowCross={false}
               max={duration}
+              tipProps={{
+                  placement: 'top',
+                  prefixCls: 'rc-slider-tooltip',
+              }}
+              tipFormatter={duration => this.secondsToMinutes(duration)}
             />
         )
     }
