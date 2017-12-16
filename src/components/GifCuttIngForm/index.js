@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import YouTube from 'react-youtube';
+import Slider from 'rc-slider';
+const createSliderWithTooltip = Slider.createSliderWithTooltip;
+const Range = createSliderWithTooltip(Slider.Range);
 
 const youtubeParse = (url) => {
     const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
@@ -11,7 +14,8 @@ class GifCuttingForm extends Component {
     constructor() {
         super();
         this.state = {
-            url: ""
+            url: "",
+            videoDuration: 0
         }
     }
 
@@ -24,7 +28,40 @@ class GifCuttingForm extends Component {
         })
     }
 
+    onReady(event, url) {
+        if(event.target.getDuration() === 0) {
+            event.target.playVideo()
+        } else {
+            this.setState({
+                videoDuration: event.target.getDuration()
+            })
+        }
+    }
+
+    secondsToMinutes(seconds) {
+        let minutes = Math.floor(seconds/60);
+        let remaining = Math.floor(seconds % 60);
+        remaining < 10 ? remaining = '0' + remaining : remaining;
+        return `${minutes}:${remaining}`
+    }
+
+    renderSlider(duration) {
+        duration = Math.round(duration)
+        return (
+            <Range
+              allowCross={false}
+              max={duration}
+              tipProps={{
+                  placement: 'top',
+                  prefixCls: 'rc-slider-tooltip',
+              }}
+              tipFormatter={duration => this.secondsToMinutes(duration)}
+            />
+        )
+    }
+
     render() {
+        this.state.videoDuration === 0 ? console.log('0 is true') : ('not 0')
         const opts = {
             width: '500',
         }
@@ -34,6 +71,7 @@ class GifCuttingForm extends Component {
                 <YouTube
                     opts={opts}
                     videoId={this.state.url}
+                    onStateChange={(event) => this.onReady(event, this.state.url)}
                 />
                 <form onSubmit={this.props.handleGifCutter} noValidate>
                     <label>
@@ -42,6 +80,7 @@ class GifCuttingForm extends Component {
                     <label>
                         Notation: <input type="text" name="title" />
                     </label>
+                        {this.state.videoDuration === 0 ? null : this.renderSlider(this.state.videoDuration)}
                     <label>
                         Start Time:
           <input className="minute-input" type="number" name="startMinutes" maxLength="2" />
