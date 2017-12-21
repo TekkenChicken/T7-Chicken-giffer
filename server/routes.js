@@ -5,7 +5,7 @@ const rp = require('request-promise')
 const app = express();
 
 router.post('/cut', (req, res, next) => {
-    const { fetchUrl, title, fetchMinutes, fetchSeconds, fetchLength, auth } = req.body;
+    const { fetchUrl, title, fetchMinutes, fetchSeconds, fetchLength, charName, auth } = req.body;
 
     const options = {
         method: 'POST',
@@ -19,7 +19,8 @@ router.post('/cut', (req, res, next) => {
             title,
             fetchMinutes,
             fetchSeconds,
-            fetchLength
+            fetchLength,
+            tags: charName
         },
         json: true,
     }
