@@ -5,6 +5,8 @@ const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
 //import Slider from 'react-rangeslider'
 
+const opts = { width: '500', }
+
 const youtubeParse = (url) => {
     const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
     const match = url.match(regExp);
@@ -18,7 +20,13 @@ class GifCuttingForm extends Component {
             url: "",
             videoDuration: 0,
             time: [0,0],
-            currentVidEvent: null
+            sliderStartPos: 0,
+            sliderEndPos: 0,
+            currentVidEvent: null,
+            inputStartMin: 0,
+            inputStartSec: 0,
+            inputEndMin: 0,
+            inputEndSec: 0
         }
     }
 
@@ -52,13 +60,14 @@ class GifCuttingForm extends Component {
     }
 
     renderSlider(duration) {
+        const { sliderStartPos, sliderEndPos } = this.state;
         duration = Math.round(duration)
         return (
             <Range
-            allowCross={false}
-              value={this.state.time}
+              allowCross={false}
+              value={[sliderStartPos, sliderEndPos]}
               max={duration}
-              onChange={(value) => this.onSliderChange(value)}
+              onChange={([sliderStartPos, sliderEndPos]) => this.onSliderChange(sliderStartPos, sliderEndPos)}
               tipProps={{
                   placement: 'top',
                   prefixCls: 'rc-slider-tooltip',
@@ -68,45 +77,58 @@ class GifCuttingForm extends Component {
         )
     }
 
-    onSliderChange(value) {
-        const initialStart = this.state.time[0];
-        const initialEnd = this.state.time[1];
+    onSliderChange(startPos, endPos) {
+        const { sliderStartPos, sliderEndPos } = this.state;
+        const { secondsToMinutes } = this;
 
-        if(value[0] === initialStart) {
-            console.log('grabbing end handle')
-            this.state.currentVidEvent.seekTo(value[1])
+        const initialStart = sliderStartPos;
+        const initialEnd = sliderEndPos;
+
+        if(startPos === initialStart) {
+            this.state.currentVidEvent.pauseVideo()
+            this.state.currentVidEvent.seekTo(endPos)
             this.setState({
-                time: value
+                inputEndMin: secondsToMinutes(endPos).split(':')[0],
+                inputEndSec: secondsToMinutes(endPos).split(':')[1],
+                sliderEndPos: endPos
             })
         }
 
-        if(value[1] === initialEnd) {
-            console.log('grabbing start handle')
-            this.state.currentVidEvent.seekTo(value[0])
+        if(endPos === initialEnd) {
+            this.state.currentVidEvent.pauseVideo()
+            this.state.currentVidEvent.seekTo(startPos)
             this.setState({
-                time: [value[0], initialEnd]
+                inputStartMin: secondsToMinutes(startPos).split(':')[0],
+                inputStartSec: secondsToMinutes(startPos).split(':')[1],
+                sliderStartPos: startPos
             })
         }
     }
 
     sliderUpdate(event, flag) {
+        const { secondsToMinutes } = this;
+        const currentTime = Math.round(event.target.getCurrentTime());
+
         if(flag === 'play') {
-            console.log('play', Math.round(event.target.getCurrentTime()), this.state.time)
             this.setState({
-                time: [Math.round(event.target.getCurrentTime()), this.state.time[1]]
+                inputStartMin: secondsToMinutes(currentTime).split(':')[0],
+                inputStartSec: secondsToMinutes(currentTime).split(':')[1],
+                sliderStartPos: currentTime
             })
         }
 
         if (flag === 'pause') {
-            console.log('pause', Math.round(event.target.getCurrentTime()), this.state.time)
             this.setState({
-                time: [this.state.time[0], Math.round(event.target.getCurrentTime())]
+                inputEndMin: secondsToMinutes(currentTime).split(':')[0],
+                inputEndSec: secondsToMinutes(currentTime).split(':')[1],
+                sliderEndPos: currentTime
             })
         }
     }
 
     render() {
-        const opts = { width: '500', }
+        const { inputStartMin, inputStartSec, inputEndMin, inputEndSec } = this.state;
+
         return (
             <div className="gif-cutting-form-container">
                 <h2>Paste YouTube link below</h2>
@@ -127,15 +149,15 @@ class GifCuttingForm extends Component {
                         {this.state.videoDuration === 0 ? null : this.renderSlider(this.state.videoDuration)}
                     <label>
                         Start Time:
-          <input className="minute-input" type="number" name="startMinutes" maxLength="2" />
+                        <input className="minute-input" type="number" name="startMinutes" maxLength="2" value={inputStartMin} />
                         :
-          <input className="seconds-input" type="number" name="startSeconds" maxLength="2" />
+                        <input className="seconds-input" type="number" name="startSeconds" maxLength="2" value={inputStartSec} />
                     </label>
                     <label>
                         End Time:
-          <input className="minute-input" type="number" name="endMinutes" />
+                        <input className="minute-input" type="number" name="endMinutes" value={inputEndMin} />
                         :
-          <input className="seconds-input" type="number" name="endSeconds" />
+                        <input className="seconds-input" type="number" name="endSeconds" value={inputEndSec} />
                     </label>
                     <input type="submit" value="Submit" />
                 </form>
