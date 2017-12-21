@@ -144,6 +144,9 @@ class GifCuttingForm extends Component {
                         Video URL: <input id="vidUrl" type="text" name="url" onChange={(e) => this.updateUrl(e)} />
                     </label>
                     <label>
+                        Character Name: <input type="text" name="charName" />
+                    </label>
+                    <label>
                         Notation: <input type="text" name="title" />
                     </label>
                         {this.state.videoDuration === 0 ? null : this.renderSlider(this.state.videoDuration)}
