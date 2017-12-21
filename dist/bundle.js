@@ -29174,6 +29174,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var createSliderWithTooltip = _rcSlider2.default.createSliderWithTooltip;
 var Range = createSliderWithTooltip(_rcSlider2.default.Range);
+//import Slider from 'react-rangeslider'
 
 var youtubeParse = function youtubeParse(url) {
     var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
@@ -29191,7 +29192,9 @@ var GifCuttingForm = function (_Component) {
 
         _this.state = {
             url: "",
-            videoDuration: 0
+            videoDuration: 0,
+            time: [0, 0],
+            currentVidEvent: null
         };
         return _this;
     }
@@ -29209,6 +29212,9 @@ var GifCuttingForm = function (_Component) {
     }, {
         key: 'onReady',
         value: function onReady(event, url) {
+            this.setState({
+                currentVidEvent: event.target
+            });
             if (event.target.getDuration() === 0) {
                 event.target.playVideo();
             } else {
@@ -29220,7 +29226,6 @@ var GifCuttingForm = function (_Component) {
     }, {
         key: 'secondsToMinutes',
         value: function secondsToMinutes(seconds) {
-            console.log('whaatt', seconds);
             var minutes = Math.floor(seconds / 60);
             var remaining = Math.floor(seconds % 60);
             remaining < 10 ? remaining = '0' + remaining : remaining;
@@ -29233,8 +29238,11 @@ var GifCuttingForm = function (_Component) {
 
             duration = Math.round(duration);
             return _react2.default.createElement(Range, {
-                allowCross: false,
+                value: this.state.time,
                 max: duration,
+                onChange: function onChange(value) {
+                    return _this2.onSliderChange(value);
+                },
                 tipProps: {
                     placement: 'top',
                     prefixCls: 'rc-slider-tooltip'
@@ -29245,14 +29253,50 @@ var GifCuttingForm = function (_Component) {
             });
         }
     }, {
+        key: 'onSliderChange',
+        value: function onSliderChange(value) {
+            var initialStart = this.state.time[0];
+            var initialEnd = this.state.time[1];
+
+            if (value[0] === initialStart) {
+                console.log('grabbing end handle');
+                this.state.currentVidEvent.seekTo(value[1]);
+                this.setState({
+                    time: value
+                });
+            }
+
+            if (value[1] === initialEnd) {
+                console.log('grabbing start handle');
+                this.state.currentVidEvent.seekTo(value[0]);
+                this.setState({
+                    time: [value[0], initialEnd]
+                });
+            }
+        }
+    }, {
+        key: 'sliderUpdate',
+        value: function sliderUpdate(event, flag) {
+            if (flag === 'play') {
+                console.log('play', Math.round(event.target.getCurrentTime()), this.state.time);
+                this.setState({
+                    time: [Math.round(event.target.getCurrentTime()), this.state.time[1]]
+                });
+            }
+
+            if (flag === 'pause') {
+                console.log('pause', Math.round(event.target.getCurrentTime()), this.state.time);
+                this.setState({
+                    time: [this.state.time[0], Math.round(event.target.getCurrentTime())]
+                });
+            }
+        }
+    }, {
         key: 'render',
         value: function render() {
             var _this3 = this;
 
-            this.state.videoDuration === 0 ? console.log('0 is true') : 'not 0';
-            var opts = {
-                width: '500'
-            };
+            var opts = { width: '500' };
             return _react2.default.createElement(
                 'div',
                 { className: 'gif-cutting-form-container' },
@@ -29266,6 +29310,12 @@ var GifCuttingForm = function (_Component) {
                     videoId: this.state.url,
                     onStateChange: function onStateChange(event) {
                         return _this3.onReady(event, _this3.state.url);
+                    },
+                    onPlay: function onPlay(event) {
+                        return _this3.sliderUpdate(event, 'play');
+                    },
+                    onPause: function onPause(event) {
+                        return _this3.sliderUpdate(event, 'pause');
                     }
                 }),
                 _react2.default.createElement(

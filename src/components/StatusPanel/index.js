@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 const GifLink = ({linkName, status, title, startTime}) => (
     <div>
         <h4>Attack Notation: {title}</h4>
-        {console.log('link name and status', linkName, status)}
         <a target="_blank" href={linkName}>{linkName}</a>
         <div>{status}</div>
     </div>
@@ -12,7 +11,6 @@ const GifLink = ({linkName, status, title, startTime}) => (
 class StatusPanel extends Component {
 
     renderLinks(links) {
-        console.log('status panel links', links)
         return Object.keys(links).map((l, key) => {
             return <GifLink key={links[l].linkName} linkName={links[l].linkName} status={links[l].status} title={links[l].title} startTime={links[l].startTime}/>
         })
@@ -20,7 +18,6 @@ class StatusPanel extends Component {
 
         
     render() {
-        console.log('status panel props', this.props)
         return (
             <div className="status-panel-container">
                 <h1>Status Panel</h1>
