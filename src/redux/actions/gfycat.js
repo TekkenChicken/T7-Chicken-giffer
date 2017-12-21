@@ -14,7 +14,6 @@ export const getAuth = () => dispatch => {
 
 //cut gif from youtube video
 export const cutGif = (url, title, startMinutes, startSeconds, length, charName, auth) => dispatch => {
-    console.log('charName', charName)
     fetch('/cut', {
         method: 'POST',
         headers: {

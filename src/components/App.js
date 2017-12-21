@@ -49,6 +49,7 @@ class App extends Component {
             startMinutes.value,
             startSeconds.value,
             timeLength,
+            [charName.value],
             auth)
         }
 
@@ -90,7 +91,8 @@ const mapDispatchToProps = (dispatch) => {
             startMinutes,
             startSeconds,
             length,
-            auth) => dispatch(cutGif(url, title, startMinutes, startSeconds, length, auth)),
+            charName,
+            auth) => dispatch(cutGif(url, title, startMinutes, startSeconds, length, charName, auth)),
             checkStatuses: (links) => dispatch(checkStatuses(links)),
             deleteGif: (id, auth) => dispatch(deleteGif(id, auth))
     }
