@@ -10,7 +10,6 @@ export const gfycat = (state = initialState, action) => {
             return Object.assign({}, state, { auth: action.token })
         //return { ...state, auth: action.token }
         case 'CONTAIN_LINK':
-            console.log('contain link update', action.link)
             const { link } = action
             return Object.assign({}, state, { links: Object.assign({}, state.links, { [link.linkId]: link}) })
         case 'UPDATE_LINK_SUCCESS':
