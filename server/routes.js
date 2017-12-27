@@ -26,7 +26,6 @@ router.post('/cut', (req, res, next) => {
     }
      return rp(options)
     .then(data => {
-        console.log('this data here', data)
         res.json(data)
     })
     .catch(err => {
@@ -36,7 +35,6 @@ router.post('/cut', (req, res, next) => {
 })
 
 router.get('/checkStatuses/:linkId', (req, res, next) => {
-    console.log('checking link id', req.params.linkId)
     const options = {
         method: 'GET',
         url: `https://api.gfycat.com/v1/gfycats/fetch/status/${req.params.linkId}`,
@@ -47,7 +45,6 @@ router.get('/checkStatuses/:linkId', (req, res, next) => {
     }
     return rp(options)
     .then(data => {
-        console.log('checked status', data)
         return res.json(data)
     })
     .catch(err => {
@@ -76,6 +73,29 @@ router.delete('/delete/:linkId', (req, res, next) => {
         res.json(err)
     })
 })
+
+router.get('/getAlbums', (req, res, next) => {
+    console.log('blah blah', req.headers.authorization) 
+    const auth = req.headers.authorization;
+
+    const options = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: auth
+        },
+        url: `https://api.gfycat.com/v1/me/album-folders`,
+        json: true
+    }
+    return rp(options)
+    .then(data => { console.log('album data', res.json(data))
+        return res.json(data)
+    })
+    .catch(err => {
+        console.log('failure', err.errorMessage)
+        res.json(err)
+    })
+}) 
 
 app.use('/', router)
 

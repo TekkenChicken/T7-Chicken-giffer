@@ -51,6 +51,7 @@ const getFetchStatus = (url, params, id) => dispatch => {
                 setTimeout(() => dispatch(getFetchStatus(url, params, id), 3000))
             } else if(data.task == 'complete') {
                 console.log('finished making the gif!')
+                dispatch(getAlbums('geese'))
                 return dispatch({
                     type: 'UPDATE_LINK_SUCCESS',
                     id
@@ -143,3 +144,45 @@ export const containLink = (linkName, title, startTime) => dispatch => {
     })
 }
 
+// get album data
+
+const getAlbums = (charName) => (dispatch, getState) => {
+    const auth = getState().gfycat.auth;
+    fetch('/getAlbums', {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth}`
+        }
+    })
+    .then(response => {
+        return response.ok ? response.json() : null
+    })
+    .then(data => {
+        console.log('album getting data', data)
+        data[0].nodes.forEach(node => {
+            if(!node.title === charName) {
+                console.log(`This album doesn't exists`)
+
+            }
+        })
+    })
+    .catch(err => console.log(err))
+}
+
+const createAlbum = (charName, auth) => {
+    fetch('/createAlbum', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth}`
+        },
+        body: JSON.stringify({charName})
+    })
+    .then(response => {
+        return response.ok ? response.json() : null
+    })
+    .then(data => {
+        console.log('creating album', data)
+    })
+    .catch(err => console.log(err))
+}
