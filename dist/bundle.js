@@ -28294,7 +28294,6 @@ var gfycat = exports.gfycat = function gfycat() {
             return Object.assign({}, state, { auth: action.token });
         //return { ...state, auth: action.token }
         case 'CONTAIN_LINK':
-            console.log('contain link update', action.link);
             var link = action.link;
 
             return Object.assign({}, state, { links: Object.assign({}, state.links, _defineProperty({}, link.linkId, link)) });
@@ -28915,7 +28914,7 @@ var App = function (_Component) {
                 alert('Don\'t forget to change the notation!');
                 return;
             }
-            this.props.cutGif(url.value, title.value, startMinutes.value, startSeconds.value, timeLength, auth);
+            this.props.cutGif(url.value, title.value, startMinutes.value, startSeconds.value, timeLength, [charName.value], auth);
         }
     }, {
         key: 'handleDelete',
@@ -28966,8 +28965,8 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
         fetchAuth: function fetchAuth() {
             return dispatch((0, _gfycat.getAuth)());
         },
-        cutGif: function cutGif(url, title, startMinutes, startSeconds, length, auth) {
-            return dispatch((0, _gfycat.cutGif)(url, title, startMinutes, startSeconds, length, auth));
+        cutGif: function cutGif(url, title, startMinutes, startSeconds, length, charName, auth) {
+            return dispatch((0, _gfycat.cutGif)(url, title, startMinutes, startSeconds, length, charName, auth));
         },
         checkStatuses: function checkStatuses(links) {
             return dispatch((0, _gfycat.checkStatuses)(links));
@@ -29004,7 +29003,7 @@ var getAuth = exports.getAuth = function getAuth() {
 };
 
 //cut gif from youtube video
-var cutGif = exports.cutGif = function cutGif(url, title, startMinutes, startSeconds, length, auth) {
+var cutGif = exports.cutGif = function cutGif(url, title, startMinutes, startSeconds, length, charName, auth) {
     return function (dispatch) {
         fetch('/cut', {
             method: 'POST',
@@ -29018,6 +29017,7 @@ var cutGif = exports.cutGif = function cutGif(url, title, startMinutes, startSec
                 fetchMinutes: startMinutes,
                 fetchSeconds: startSeconds,
                 fetchLength: length,
+                charName: charName,
                 auth: auth
             })
         }).then(function (response) {
@@ -29044,6 +29044,7 @@ var getFetchStatus = function getFetchStatus(url, params, id) {
                     });
                 } else if (data.task == 'complete') {
                     console.log('finished making the gif!');
+                    dispatch(getAlbums('geese'));
                     return dispatch({
                         type: 'UPDATE_LINK_SUCCESS',
                         id: id
@@ -29139,6 +29140,29 @@ var containLink = exports.containLink = function containLink(linkName, title, st
     };
 };
 
+// get album data
+
+var getAlbums = function getAlbums(charName) {
+    return function (dispatch, getState) {
+        var auth = getState().gfycat.auth;
+        fetch('/getAlbums', {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + auth
+            }
+        }).then(function (response) {
+            return response.ok ? response.json() : null;
+        }).then(function (data) {
+            console.log('album getting data', data);
+            data[0].nodes.forEach(function (node) {
+                console.log('a node', node);
+            });
+        }).catch(function (err) {
+            return console.log(err);
+        });
+    };
+};
+
 /***/ }),
 /* 323 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -29149,6 +29173,8 @@ var containLink = exports.containLink = function containLink(linkName, title, st
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -29176,6 +29202,8 @@ var createSliderWithTooltip = _rcSlider2.default.createSliderWithTooltip;
 var Range = createSliderWithTooltip(_rcSlider2.default.Range);
 //import Slider from 'react-rangeslider'
 
+var opts = { width: '500' };
+
 var youtubeParse = function youtubeParse(url) {
     var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
     var match = url.match(regExp);
@@ -29194,7 +29222,13 @@ var GifCuttingForm = function (_Component) {
             url: "",
             videoDuration: 0,
             time: [0, 0],
-            currentVidEvent: null
+            sliderStartPos: 0,
+            sliderEndPos: 0,
+            currentVidEvent: null,
+            inputStartMin: 0,
+            inputStartSec: 0,
+            inputEndMin: 0,
+            inputEndSec: 0
         };
         return _this;
     }
@@ -29236,12 +29270,21 @@ var GifCuttingForm = function (_Component) {
         value: function renderSlider(duration) {
             var _this2 = this;
 
+            var _state = this.state,
+                sliderStartPos = _state.sliderStartPos,
+                sliderEndPos = _state.sliderEndPos;
+
             duration = Math.round(duration);
             return _react2.default.createElement(Range, {
-                value: this.state.time,
+                allowCross: false,
+                value: [sliderStartPos, sliderEndPos],
                 max: duration,
-                onChange: function onChange(value) {
-                    return _this2.onSliderChange(value);
+                onChange: function onChange(_ref) {
+                    var _ref2 = _slicedToArray(_ref, 2),
+                        sliderStartPos = _ref2[0],
+                        sliderEndPos = _ref2[1];
+
+                    return _this2.onSliderChange(sliderStartPos, sliderEndPos);
                 },
                 tipProps: {
                     placement: 'top',
@@ -29254,40 +29297,56 @@ var GifCuttingForm = function (_Component) {
         }
     }, {
         key: 'onSliderChange',
-        value: function onSliderChange(value) {
-            var initialStart = this.state.time[0];
-            var initialEnd = this.state.time[1];
+        value: function onSliderChange(startPos, endPos) {
+            var _state2 = this.state,
+                sliderStartPos = _state2.sliderStartPos,
+                sliderEndPos = _state2.sliderEndPos;
+            var secondsToMinutes = this.secondsToMinutes;
 
-            if (value[0] === initialStart) {
-                console.log('grabbing end handle');
-                this.state.currentVidEvent.seekTo(value[1]);
+
+            var initialStart = sliderStartPos;
+            var initialEnd = sliderEndPos;
+
+            if (startPos === initialStart) {
+                this.state.currentVidEvent.pauseVideo();
+                this.state.currentVidEvent.seekTo(endPos);
                 this.setState({
-                    time: value
+                    inputEndMin: secondsToMinutes(endPos).split(':')[0],
+                    inputEndSec: secondsToMinutes(endPos).split(':')[1],
+                    sliderEndPos: endPos
                 });
             }
 
-            if (value[1] === initialEnd) {
-                console.log('grabbing start handle');
-                this.state.currentVidEvent.seekTo(value[0]);
+            if (endPos === initialEnd) {
+                this.state.currentVidEvent.pauseVideo();
+                this.state.currentVidEvent.seekTo(startPos);
                 this.setState({
-                    time: [value[0], initialEnd]
+                    inputStartMin: secondsToMinutes(startPos).split(':')[0],
+                    inputStartSec: secondsToMinutes(startPos).split(':')[1],
+                    sliderStartPos: startPos
                 });
             }
         }
     }, {
         key: 'sliderUpdate',
         value: function sliderUpdate(event, flag) {
+            var secondsToMinutes = this.secondsToMinutes;
+
+            var currentTime = Math.round(event.target.getCurrentTime());
+
             if (flag === 'play') {
-                console.log('play', Math.round(event.target.getCurrentTime()), this.state.time);
                 this.setState({
-                    time: [Math.round(event.target.getCurrentTime()), this.state.time[1]]
+                    inputStartMin: secondsToMinutes(currentTime).split(':')[0],
+                    inputStartSec: secondsToMinutes(currentTime).split(':')[1],
+                    sliderStartPos: currentTime
                 });
             }
 
             if (flag === 'pause') {
-                console.log('pause', Math.round(event.target.getCurrentTime()), this.state.time);
                 this.setState({
-                    time: [this.state.time[0], Math.round(event.target.getCurrentTime())]
+                    inputEndMin: secondsToMinutes(currentTime).split(':')[0],
+                    inputEndSec: secondsToMinutes(currentTime).split(':')[1],
+                    sliderEndPos: currentTime
                 });
             }
         }
@@ -29296,7 +29355,13 @@ var GifCuttingForm = function (_Component) {
         value: function render() {
             var _this3 = this;
 
-            var opts = { width: '500' };
+            var _state3 = this.state,
+                inputStartMin = _state3.inputStartMin,
+                inputStartSec = _state3.inputStartSec,
+                inputEndMin = _state3.inputEndMin,
+                inputEndSec = _state3.inputEndSec;
+
+
             return _react2.default.createElement(
                 'div',
                 { className: 'gif-cutting-form-container' },
@@ -29332,6 +29397,12 @@ var GifCuttingForm = function (_Component) {
                     _react2.default.createElement(
                         'label',
                         null,
+                        'Character Name: ',
+                        _react2.default.createElement('input', { type: 'text', name: 'charName' })
+                    ),
+                    _react2.default.createElement(
+                        'label',
+                        null,
                         'Notation: ',
                         _react2.default.createElement('input', { type: 'text', name: 'title' })
                     ),
@@ -29340,17 +29411,17 @@ var GifCuttingForm = function (_Component) {
                         'label',
                         null,
                         'Start Time:',
-                        _react2.default.createElement('input', { className: 'minute-input', type: 'number', name: 'startMinutes', maxLength: '2' }),
+                        _react2.default.createElement('input', { className: 'minute-input', type: 'number', name: 'startMinutes', maxLength: '2', value: inputStartMin }),
                         ':',
-                        _react2.default.createElement('input', { className: 'seconds-input', type: 'number', name: 'startSeconds', maxLength: '2' })
+                        _react2.default.createElement('input', { className: 'seconds-input', type: 'number', name: 'startSeconds', maxLength: '2', value: inputStartSec })
                     ),
                     _react2.default.createElement(
                         'label',
                         null,
                         'End Time:',
-                        _react2.default.createElement('input', { className: 'minute-input', type: 'number', name: 'endMinutes' }),
+                        _react2.default.createElement('input', { className: 'minute-input', type: 'number', name: 'endMinutes', value: inputEndMin }),
                         ':',
-                        _react2.default.createElement('input', { className: 'seconds-input', type: 'number', name: 'endSeconds' })
+                        _react2.default.createElement('input', { className: 'seconds-input', type: 'number', name: 'endSeconds', value: inputEndSec })
                     ),
                     _react2.default.createElement('input', { type: 'submit', value: 'Submit' })
                 )
@@ -40641,22 +40712,21 @@ var GifLink = function GifLink(_ref) {
         title = _ref.title,
         startTime = _ref.startTime;
     return _react2.default.createElement(
-        'div',
+        "div",
         null,
         _react2.default.createElement(
-            'h4',
+            "h4",
             null,
-            'Attack Notation: ',
+            "Attack Notation: ",
             title
         ),
-        console.log('link name and status', linkName, status),
         _react2.default.createElement(
-            'a',
-            { target: '_blank', href: linkName },
+            "a",
+            { target: "_blank", href: linkName },
             linkName
         ),
         _react2.default.createElement(
-            'div',
+            "div",
             null,
             status
         )
@@ -40673,24 +40743,22 @@ var StatusPanel = function (_Component) {
     }
 
     _createClass(StatusPanel, [{
-        key: 'renderLinks',
+        key: "renderLinks",
         value: function renderLinks(links) {
-            console.log('status panel links', links);
             return Object.keys(links).map(function (l, key) {
                 return _react2.default.createElement(GifLink, { key: links[l].linkName, linkName: links[l].linkName, status: links[l].status, title: links[l].title, startTime: links[l].startTime });
             });
         }
     }, {
-        key: 'render',
+        key: "render",
         value: function render() {
-            console.log('status panel props', this.props);
             return _react2.default.createElement(
-                'div',
-                { className: 'status-panel-container' },
+                "div",
+                { className: "status-panel-container" },
                 _react2.default.createElement(
-                    'h1',
+                    "h1",
                     null,
-                    'Status Panel'
+                    "Status Panel"
                 ),
                 this.renderLinks(this.props.links)
             );
