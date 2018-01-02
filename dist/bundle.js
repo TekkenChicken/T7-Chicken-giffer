@@ -29044,7 +29044,7 @@ var getFetchStatus = function getFetchStatus(url, params, id) {
                     });
                 } else if (data.task == 'complete') {
                     console.log('finished making the gif!');
-                    dispatch(getAlbums('geese'));
+                    dispatch(getAlbums('Testing', id));
                     return dispatch({
                         type: 'UPDATE_LINK_SUCCESS',
                         id: id
@@ -29142,8 +29142,11 @@ var containLink = exports.containLink = function containLink(linkName, title, st
 
 // get album data
 
-var getAlbums = function getAlbums(charName) {
+var getAlbums = function getAlbums(charName, gfycatId) {
     return function (dispatch, getState) {
+
+        console.log('character name', charName);
+
         var auth = getState().gfycat.auth;
         fetch('/getAlbums', {
             headers: {
@@ -29154,12 +29157,78 @@ var getAlbums = function getAlbums(charName) {
             return response.ok ? response.json() : null;
         }).then(function (data) {
             console.log('album getting data', data);
-            data[0].nodes.forEach(function (node) {
-                console.log('a node', node);
-            });
+
+            var titlesArray = [];
+
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = data[0].nodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var node = _step.value;
+
+                    titlesArray.push(node.title);
+                    if (titlesArray.includes(charName)) {
+                        console.log('there is a match');
+                        dispatch(addGifToAlbum(gfycatId, node.id));
+                        break;
+                    }
+                }
+
+                // data[0].nodes.forEach(node => {
+                //     titlesArray.push(node.title)
+                //     if (titlesArray.includes(charName)) {
+                //         console.log('there is a match')
+                //         dispatch(addGifToAlbum(gfycatId, node.id))
+                //         return;
+                //     }
+                // })
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            if (!titlesArray.includes(charName)) {
+                console.log('there is no match');
+                //dispatch(createAlbum(charName))
+            }
         }).catch(function (err) {
             return console.log(err);
         });
+    };
+};
+
+var createAlbum = function createAlbum(charName, auth) {
+    fetch('/createAlbum', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + auth
+        },
+        body: JSON.stringify({ charName: charName })
+    }).then(function (response) {
+        return response.ok ? response.json() : null;
+    }).then(function (data) {
+        console.log('creating album', data);
+    }).catch(function (err) {
+        return console.log(err);
+    });
+};
+
+var addGifToAlbum = function addGifToAlbum(gfycatId, albumId) {
+    return function (dispatch) {
+        console.log('Adding gif to album', gfycatId, albumId);
     };
 };
 
