@@ -51,7 +51,7 @@ const getFetchStatus = (url, params, id) => dispatch => {
                 setTimeout(() => dispatch(getFetchStatus(url, params, id), 3000))
             } else if(data.task == 'complete') {
                 console.log('finished making the gif!')
-                dispatch(getAlbums('geese'))
+                dispatch(getAlbums('Testing', id))
                 return dispatch({
                     type: 'UPDATE_LINK_SUCCESS',
                     id
@@ -146,7 +146,10 @@ export const containLink = (linkName, title, startTime) => dispatch => {
 
 // get album data
 
-const getAlbums = (charName) => (dispatch, getState) => {
+const getAlbums = (charName, gfycatId) => (dispatch, getState) => {
+
+    console.log('character name', charName);
+
     const auth = getState().gfycat.auth;
     fetch('/getAlbums', {
         headers: {
@@ -159,12 +162,23 @@ const getAlbums = (charName) => (dispatch, getState) => {
     })
     .then(data => {
         console.log('album getting data', data)
-        data[0].nodes.forEach(node => {
-            if(!node.title === charName) {
-                console.log(`This album doesn't exists`)
 
+        let titlesArray = [];
+
+        for(let node of data[0].nodes) {
+            titlesArray.push(node.title)
+            if (titlesArray.includes(charName)) {
+                console.log('there is a match')
+                dispatch(addGifToAlbum(gfycatId, node.id))
+                break;
             }
-        })
+        }
+
+        if(!titlesArray.includes(charName)) {
+            console.log('there is no match')
+            //dispatch(createAlbum(charName))
+        }
+
     })
     .catch(err => console.log(err))
 }
@@ -185,4 +199,8 @@ const createAlbum = (charName, auth) => {
         console.log('creating album', data)
     })
     .catch(err => console.log(err))
+}
+
+const addGifToAlbum = (gfycatId, albumId) => dispatch => {
+    console.log('Adding gif to album', gfycatId, albumId)
 }
