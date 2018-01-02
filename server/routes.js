@@ -75,7 +75,6 @@ router.delete('/delete/:linkId', (req, res, next) => {
 })
 
 router.get('/getAlbums', (req, res, next) => {
-    console.log('blah blah', req.headers.authorization) 
     const auth = req.headers.authorization;
 
     const options = {
@@ -88,14 +87,39 @@ router.get('/getAlbums', (req, res, next) => {
         json: true
     }
     return rp(options)
-    .then(data => { console.log('album data', res.json(data))
+    .then(data => {
         return res.json(data)
     })
     .catch(err => {
         console.log('failure', err.errorMessage)
         res.json(err)
     })
-}) 
+})
+
+router.post('/createAlbum', (req, res, next) => {
+    const auth = req.body.authorization;
+    const { charName } = req.body;
+    console.log('is auth working tho?', auth)
+    console.log('and charName?', charName)
+
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: auth
+        },
+        url: `https://api.gfycat.com/v1/me/albums/${charName}`,
+        json: true
+    }
+    return rp(options)
+    .then(data => { console.log('creating album data', data)
+        return res.json(data)
+    })
+    .catch(err => {
+        console.log(`couldn't create data`, err.errorMessage)
+        res.json(err)
+    })
+})
 
 app.use('/', router)
 
