@@ -64,10 +64,10 @@ class App extends Component {
         return (
             <div className="main-container">
                 <GifCuttingForm handleGifCutter={(e) => this.handleGifCutter(e)} />
-                    {
-                    !this.props.links ? console.log('nothing to show status for') : <StatusPanel links={this.props.links} />
-                    }
                 <GifDeletingForm handleDelete={(e) => this.handleDelete(e, this.props.auth)}/>
+                {
+                    !this.props.links ? console.log('nothing to show status for') : <StatusPanel links={this.props.links} />
+                }
             </div>
         )
     }

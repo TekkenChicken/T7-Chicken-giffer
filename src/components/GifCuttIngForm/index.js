@@ -3,6 +3,7 @@ import YouTube from 'react-youtube';
 import Slider from 'rc-slider';
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
+import './style.css';
 //import Slider from 'react-rangeslider'
 
 const opts = { width: '500', }
