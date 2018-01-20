@@ -97,18 +97,20 @@ router.get('/getAlbums', (req, res, next) => {
 })
 
 router.post('/createAlbum', (req, res, next) => {
-    const auth = req.body.authorization;
-    const { charName } = req.body;
-    console.log('is auth working tho?', auth)
-    console.log('and charName?', charName)
+    const { Authorization, charName } = req.body;
 
+    console.log('show me auth', Authorization);
+    
     const options = {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: auth
+            Authorization
         },
-        url: `https://api.gfycat.com/v1/me/albums/${charName}`,
+        url: `https://api.gfycat.com/v1/me/albums/2`,
+        body: {
+           folderName: charName, 
+        },
         json: true
     }
     return rp(options)
@@ -116,8 +118,35 @@ router.post('/createAlbum', (req, res, next) => {
         return res.json(data)
     })
     .catch(err => {
-        console.log(`couldn't create data`, err.errorMessage)
+        console.log(`couldn't create`, err.errorMessage)
         res.json(err)
+    })
+})
+
+router.patch('/addGifToAlbum', (req, res, next) => {
+    const { Authorization, action, albumId, gfycat } = req.body;
+     const options = {
+         method: 'PATCH',
+         headers: {
+             'Content-Type': 'application/json',
+             Authorization,
+         },
+         url: `https://api.gfycat.com/v1/me/albums/${albumId}`,
+         body: {
+             action: 'add_to_album',
+             gfy_ids: gfycat,
+         },
+         json: true
+     }
+
+     console.log('options', options)
+     return rp(options)
+     .then(data => { console.log('adding gif to album', data)
+        return res.json({status: 'success'})
+    })
+    .catch( err => {
+        console.log('could not add gif to album', err.message)
+        res.json(err.message)
     })
 })
 

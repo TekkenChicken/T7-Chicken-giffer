@@ -1,3 +1,5 @@
+import { gfycat } from "../reducers/gfycat";
+
 //fetch authenticatoin token from node server
 export const getAuth = () => dispatch => {
     fetch('/getAuth', {
@@ -35,13 +37,21 @@ export const cutGif = (url, title, startMinutes, startSeconds, length, charName,
     })
     .then((data => {
         //get the gif name and send it to containLink action
+        dispatch(storeCharName(charName))
         dispatch(containLink(data.gfyname, title, startMinutes+':'+startSeconds))
     }))
 }
 
-//get statuses
+const storeCharName = charName => dispatch => {
+    return dispatch({
+        type: 'STORE_CHAR_NAME',
+        payload: charName
+    })
+}
 
-const getFetchStatus = (url, params, id) => dispatch => {
+//get statuses
+const getFetchStatus = (url, params, id) => (dispatch, getState) => {
+    const charName = getState().gfycat.charName[0];
     return new Promise((resolve, reject) => {
         fetch(url, params, id)
         .then(response => response.json())
@@ -51,9 +61,10 @@ const getFetchStatus = (url, params, id) => dispatch => {
                 setTimeout(() => dispatch(getFetchStatus(url, params, id), 3000))
             } else if(data.task == 'complete') {
                 console.log('finished making the gif!')
-                dispatch(getAlbums('Testing', id))
+                console.log(charName)
+                dispatch(getAlbums(charName, id))
                 return dispatch({
-                    type: 'UPDATE_LINK_SUCCESS',
+                    type: 'UPDATE_LINK_SUCCESS',    
                     id
                 })
             } else if(data.task == 'NotFoundo') {
@@ -146,6 +157,8 @@ export const containLink = (linkName, title, startTime) => dispatch => {
 
 // get album data
 
+let terribleCodePractice;
+
 const getAlbums = (charName, gfycatId) => (dispatch, getState) => {
 
     console.log('character name', charName);
@@ -169,38 +182,58 @@ const getAlbums = (charName, gfycatId) => (dispatch, getState) => {
             titlesArray.push(node.title)
             if (titlesArray.includes(charName)) {
                 console.log('there is a match')
-                dispatch(addGifToAlbum(gfycatId, node.id))
+                dispatch(addGifToAlbum(gfycatId, node.id, auth))
                 break;
             }
         }
 
         if(!titlesArray.includes(charName)) {
-            console.log('there is no match')
-            //dispatch(createAlbum(charName))
+            dispatch(createAlbum(charName, gfycatId, auth))
         }
 
     })
     .catch(err => console.log(err))
 }
 
-const createAlbum = (charName, auth) => {
+const createAlbum = (charName, gfycatId, auth) => dispatch => {
     fetch('/createAlbum', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth}`
         },
-        body: JSON.stringify({charName})
+        body: JSON.stringify({
+            'Authorization': `Bearer ${auth}`,
+            charName
+        })
     })
     .then(response => {
         return response.ok ? response.json() : null
     })
     .then(data => {
-        console.log('creating album', data)
+        console.log('album created', data)
+        dispatch(addGifToAlbum(gfycatId, data, auth))
     })
     .catch(err => console.log(err))
 }
 
-const addGifToAlbum = (gfycatId, albumId) => dispatch => {
-    console.log('Adding gif to album', gfycatId, albumId)
+const addGifToAlbum = (gfycatId, albumId, auth) => dispatch => {
+    fetch('/addGifToAlbum', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'add_to_album',
+            'Authorization': `Bearer ${auth}`,
+            albumId,
+            gfycat: [gfycatId.toLowerCase()]
+            })
+        })
+        .then(response => {
+            return response.ok ? response.json() : null
+        })
+        .then(data => {
+            console.log('added to album', data)
+        })
+        .catch(err => console.log('you messed up bro', err))
 }

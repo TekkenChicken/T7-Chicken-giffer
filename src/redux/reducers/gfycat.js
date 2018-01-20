@@ -9,6 +9,8 @@ export const gfycat = (state = initialState, action) => {
         case 'GET_AUTH':
             return Object.assign({}, state, { auth: action.token })
         //return { ...state, auth: action.token }
+        case 'STORE_CHAR_NAME':
+        return Object.assign({}, state, { charName: action.payload })
         case 'CONTAIN_LINK':
             const { link } = action
             return Object.assign({}, state, { links: Object.assign({}, state.links, { [link.linkId]: link}) })
