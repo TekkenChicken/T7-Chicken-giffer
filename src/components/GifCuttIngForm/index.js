@@ -4,6 +4,7 @@ import Slider from 'rc-slider';
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
 import './style.css';
+import '../../../node_modules/rc-slider/assets/index.css';
 //import Slider from 'react-rangeslider'
 
 const opts = { width: '500', }
@@ -132,38 +133,47 @@ class GifCuttingForm extends Component {
 
         return (
             <div className="gif-cutting-form-container">
-                <h2>Paste YouTube link below</h2>
-                <YouTube
+                <h2>T7 Chicken Giffer</h2>
+                <h3>Make Gifs for T7 Chicken</h3>
+                <form onSubmit={this.props.handleGifCutter} noValidate>
+                    <label>
+                        YouTube: <input id="vidUrl" type="text" name="url" placeholder="Paste link here" onChange={(e) => this.updateUrl(e)} />
+                    </label>
+                                    <YouTube
                     opts={opts}
                     videoId={this.state.url}
                     onStateChange={(event) => this.onReady(event, this.state.url)}
                     onPlay={(event) => this.sliderUpdate(event, 'play')}
                     onPause={(event) => this.sliderUpdate(event, 'pause')}
                 />
-                <form onSubmit={this.props.handleGifCutter} noValidate>
-                    <label>
-                        Video URL: <input id="vidUrl" type="text" name="url" onChange={(e) => this.updateUrl(e)} />
-                    </label>
-                    <label>
-                        Character Name: <input type="text" name="charName" />
-                    </label>
-                    <label>
-                        Notation: <input type="text" name="title" />
-                    </label>
+                    <div className="slider-container">
                         {this.state.videoDuration === 0 ? null : this.renderSlider(this.state.videoDuration)}
-                    <label>
-                        Start Time:
-                        <input className="minute-input" type="number" name="startMinutes" maxLength="2" value={inputStartMin} />
-                        :
-                        <input className="seconds-input" type="number" name="startSeconds" maxLength="2" value={inputStartSec} />
-                    </label>
-                    <label>
-                        End Time:
-                        <input className="minute-input" type="number" name="endMinutes" value={inputEndMin} />
-                        :
-                        <input className="seconds-input" type="number" name="endSeconds" value={inputEndSec} />
-                    </label>
-                    <input type="submit" value="Submit" />
+                        <div className="input-container">
+                        <span>
+                            <h3>Start Time</h3>
+                            <input className="minute-input" type="number" name="startMinutes" maxLength="2" value={inputStartMin} />
+                            :
+                            <input className="seconds-input" type="number" name="startSeconds" maxLength="2" value={inputStartSec} />
+                        </span>
+                        <span>
+                            <h3>End Time</h3>
+                            <input className="minute-input" type="number" name="endMinutes" value={inputEndMin} />
+                            :
+                            <input className="seconds-input" type="number" name="endSeconds" value={inputEndSec} />
+                        </span>
+                        </div>
+                    </div>
+                    <div className="labeling-container">
+                        <span>
+                            <div>
+                                Character? <input type="text" name="charName" />
+                            </div>
+                            <div>
+                                Notation? <input type="text" name="title" />
+                            </div>
+                        </span>
+                        <input type="submit" value="Submit" />
+                    </div>
                 </form>
             </div>
         )

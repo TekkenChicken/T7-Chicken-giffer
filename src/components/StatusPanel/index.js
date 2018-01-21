@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import './style.css';
+
 const GifLink = ({linkName, status, title, startTime}) => (
     <div>
         <h4>Attack Notation: {title}</h4>

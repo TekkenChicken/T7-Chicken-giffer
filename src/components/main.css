@@ -1,0 +1,9 @@
+.main-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.gif-action-container {
+    text-align: center;
+    width: 70%;
+}

@@ -6,6 +6,8 @@ import GifCuttingForm from './GifCuttingForm';
 import GifDeletingForm from './GifDeletingForm';
 import StatusPanel from './StatusPanel';
 
+import './main.css';
+
 
 class App extends Component {
     constructor() {
@@ -63,8 +65,10 @@ class App extends Component {
     render() {
         return (
             <div className="main-container">
-                <GifCuttingForm handleGifCutter={(e) => this.handleGifCutter(e)} />
-                <GifDeletingForm handleDelete={(e) => this.handleDelete(e, this.props.auth)}/>
+                <div className="gif-action-container">
+                    <GifCuttingForm handleGifCutter={(e) => this.handleGifCutter(e)} />
+                    <GifDeletingForm handleDelete={(e) => this.handleDelete(e, this.props.auth)}/>
+                </div>
                 {
                     !this.props.links ? console.log('nothing to show status for') : <StatusPanel links={this.props.links} />
                 }
